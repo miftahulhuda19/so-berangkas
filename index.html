@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <title>SO BERANGKAS IC</title>
+  <link href="https://fonts.googleapis.com/css2?family=Lato&display=swap" rel="stylesheet">
+  <style>
+    body {
+      font-family: 'Lato', sans-serif;
+      background: #f4f4f4;
+      padding: 40px;
+      display: flex;
+      justify-content: center;
+    }
+    .container {
+      width: 800px;
+      background: white;
+      padding: 30px;
+      border-radius: 10px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    }
+    h1 {
+      text-align: center;
+      margin-bottom: 20px;
+    }
+    label {
+      display: block;
+      margin-top: 10px;
+    }
+    input {
+      width: 100%;
+      padding: 8px;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+      box-sizing: border-box;
+    }
+    input[readonly] {
+      background-color: #eee;
+    }
+    .section {
+      margin-top: 25px;
+      font-weight: bold;
+      text-align: center;
+      border-top: 1px solid #ddd;
+      padding-top: 10px;
+    }
+    .button-group {
+      display: flex;
+      gap: 10px;
+      margin-top: 20px;
+    }
+    button {
+      flex: 1;
+      padding: 10px;
+      font-size: 16px;
+      border: none;
+      border-radius: 6px;
+      color: white;
+      cursor: pointer;
+    }
+    .btn-hitung { background-color: #007BFF; }
+    .btn-reset { background-color: #dc3545; }
+    .btn-simpan { background-color: #28a745; }
+  </style>
+</head>
+<body>
+  <div class="container" id="pdfArea">
+    <h1>SO BERANGKAS IC</h1>
+    <label>KODE TOKO: <input type="text" id="kodeToko" /></label>
+    <label>NAMA TOKO: <input type="text" id="namaToko" /></label>
+    <label>NO SO KE: <input type="number" id="soKe" /></label>
+    <label>UANG FISIK: <input type="text" id="uangFisik" /></label>
+    <label>UANG SALES: <input type="text" id="uangSales" /></label>
+    <label>UANG KAS TOKO: <input type="text" id="uangKasToko" /></label>
+    <label>UANG RRAK: <input type="text" id="uangRRAK" /></label>
+    <label>TOTAL: <input type="text" id="totalUang" readonly /></label>
+
+    <div class="section">MODAL KASIR</div>
+    <label>INDUK: <input type="text" id="induk" /></label>
+    <label>ANAK: <input type="text" id="anak" /></label>
+    <label>BON PERSONIL: <input type="text" id="bonPersonil" /></label>
+    <label>BON RRAK: <input type="text" id="bonRRAK" /></label>
+    <label>BA VARIANCE: <input type="text" id="baVariance" /></label>
+    <label>TUKAR DC: <input type="text" id="tukarDC" /></label>
+    <label>LAIN LAIN: <input type="text" id="lainLain" /></label>
+    <label>KLAIM-KLAIM: <input type="text" id="klaimKlaim" /></label>
+    <label>GRAND TOTAL: <input type="text" id="grandTotal" readonly /></label>
+
+    <div class="button-group">
+      <button class="btn-hitung" onclick="hitung()">HITUNG</button>
+      <button class="btn-reset" onclick="resetForm()">RESET</button>
+      <button class="btn-simpan" onclick="simpanCSV()">SIMPAN</button>
+    </div>
+  </div>
+
+  <script>
+    function parseRupiahToNumber(value) {
+      return parseFloat(value.replace(/\./g, '')) || 0;
+    }
+    function formatToRupiah(number) {
+      return number.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+    }
+    function getNumber(id) {
+      return parseRupiahToNumber(document.getElementById(id).value);
+    }
+    function hitung() {
+      const uangFisik = getNumber('uangFisik');
+      const uangSales = getNumber('uangSales');
+      const uangKasToko = getNumber('uangKasToko');
+      const uangRRAK = getNumber('uangRRAK');
+      const induk = getNumber('induk');
+      const anak = getNumber('anak');
+      const bonPersonil = getNumber('bonPersonil');
+      const bonRRAK = getNumber('bonRRAK');
+      const baVariance = getNumber('baVariance');
+      const tukarDC = getNumber('tukarDC');
+      const lainLain = getNumber('lainLain');
+      const klaimKlaim = getNumber('klaimKlaim');
+
+      const total = (uangKasToko + uangSales + uangRRAK) -
+                    (induk + anak + bonPersonil + bonRRAK + baVariance + tukarDC + lainLain + klaimKlaim);
+      const grandTotal = uangFisik - total;
+
+      document.getElementById('totalUang').value = formatToRupiah(total);
+      document.getElementById('grandTotal').value = formatToRupiah(grandTotal);
+    }
+    function resetForm() {
+      [
+        'uangFisik', 'uangSales', 'uangKasToko', 'uangRRAK',
+        'induk', 'anak', 'bonPersonil', 'bonRRAK',
+        'baVariance', 'tukarDC', 'lainLain', 'klaimKlaim',
+        'totalUang', 'grandTotal', 'kodeToko', 'soKe', 'namaToko'
+      ].forEach(id => document.getElementById(id).value = '');
+    }
+    function simpanCSV() {
+      const now = new Date();
+      const tanggal = now.getDate().toString().padStart(2, '0');
+      const bulan = (now.getMonth() + 1).toString().padStart(2, '0');
+      const tahun = now.getFullYear();
+
+      const kodeToko = document.getElementById("kodeToko").value || 'KODE';
+      const soKe = document.getElementById("soKe").value || '00';
+      const namaFile = `${tahun}${bulan}${tanggal}${kodeToko}${soKe}.csv`;
+
+      const data = [
+        ["Kode Toko", document.getElementById("kodeToko").value],
+        ["Nama Toko", document.getElementById("namaToko").value],
+        ["SO Ke", document.getElementById("soKe").value],
+        ["Uang Fisik", document.getElementById("uangFisik").value],
+        ["Uang Sales", document.getElementById("uangSales").value],
+        ["Uang Kas Toko", document.getElementById("uangKasToko").value],
+        ["Uang RRAK", document.getElementById("uangRRAK").value],
+        ["Total", document.getElementById("totalUang").value],
+        ["Induk", document.getElementById("induk").value],
+        ["Anak", document.getElementById("anak").value],
+        ["Bon Personil", document.getElementById("bonPersonil").value],
+        ["Bon RRAK", document.getElementById("bonRRAK").value],
+        ["BA Variance", document.getElementById("baVariance").value],
+        ["Tukar DC", document.getElementById("tukarDC").value],
+        ["Lain-lain", document.getElementById("lainLain").value],
+        ["Klaim-klaim", document.getElementById("klaimKlaim").value],
+        ["Grand Total", document.getElementById("grandTotal").value]
+      ];
+
+      const csvContent = data.map(e => e.join(",")).join("\n");
+      const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+      const link = document.createElement("a");
+      link.setAttribute("href", URL.createObjectURL(blob));
+      link.setAttribute("download", namaFile);
+      link.style.visibility = 'hidden';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    }
+    document.querySelectorAll("input[type='text']").forEach(input => {
+      input.addEventListener('input', function () {
+        if (!['kodeToko', 'namaToko'].includes(this.id)) {
+          const value = this.value.replace(/\D/g, '');
+          this.value = value ? formatToRupiah(value) : '';
+        }
+      });
+    });
+  </script>
+</body>
+</html>
